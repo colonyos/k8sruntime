@@ -1,2 +1,2 @@
 # K8sColonyRuntime
-Implement Colony apps using Kubernetes.
+Run Colony processes on Kubernetes.
