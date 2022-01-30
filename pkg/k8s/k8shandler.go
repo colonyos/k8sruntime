@@ -2,9 +2,8 @@ package k8s
 
 import (
 	"context"
-	"flag"
-	"fmt"
 	"path/filepath"
+	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -22,9 +21,14 @@ type K8sHandler struct {
 	namespace string
 }
 
+type ContainerSpec struct {
+	Args           []string
+	Name           string
+	ContainerImage string
+}
+
 func CreateK8sHandler(namespace string) (*K8sHandler, error) {
 	handler := &K8sHandler{}
-
 	handler.namespace = namespace
 
 	var err error
@@ -37,15 +41,10 @@ func CreateK8sHandler(namespace string) (*K8sHandler, error) {
 }
 
 func (handler *K8sHandler) setupK8sClient() (dynamic.Interface, *kubernetes.Clientset, error) {
-	var kubeconfig *string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
+	home := homedir.HomeDir()
+	kubeconfig := filepath.Join(home, ".kube", "config")
 
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -60,66 +59,79 @@ func (handler *K8sHandler) setupK8sClient() (dynamic.Interface, *kubernetes.Clie
 	return client, clientset, nil
 }
 
-func (handler K8sHandler) ComposeDeployment() string {
+func (handler K8sHandler) parseCmd(cmdStr string) string {
+	cmdArr := strings.Split(cmdStr, " ")
+
+	cmdArrStr := "["
+	start := true
+	for _, c := range cmdArr {
+		if start {
+			cmdArrStr += "\"" + c + "\","
+			start = false
+		} else {
+			cmdArrStr += " \"" + c + "\","
+		}
+	}
+	cmdArrStr = cmdArrStr[:len(cmdArrStr)-1]
+	cmdArrStr += "]"
+
+	return cmdArrStr
+}
+
+func (handler K8sHandler) ComposeDeployment(name string, containerImage string, cmdStr string, colonyID string, runtimePrvKey string, coloniesServerHost string, coloniesServerPort string) string {
 	yaml := `
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fibonacci-deployment
+  name: ` + name + `-deployment
   labels:
-    app: fibonacci
+    app: ` + name + `
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: fibonacci
+      app: ` + name + `
   template:
     metadata:
       labels:
-        app: fibonacci
+        app: ` + name + `
     spec:
       containers:
-      - name: fibonacci
-        image: johan/fibonacci
-        command:
-            - "go"
-            - "run"
-            - "solver.go"
+      - name: ` + name + `
+        image: ` + containerImage + `
+        command: ` + handler.parseCmd(cmdStr) + `
         env:
         - name: COLONYID
-          value: "6007729ab9a8985b3a3d2da67f255ba13632c4670fe5c218981d77c55f7b3cab"
+          value: "` + colonyID + `" 
         - name: RUNTIME_PRVKEY
-          value: "2a8647f61c18eb0fe05b33ee1bbe6c7b946bcc763b29f9a3601ea85cb5f7b6eb"
+          value: "` + runtimePrvKey + `"
         - name: COLONIES_SERVER_HOST
-          value: "10.0.0.240"
+          value: "` + coloniesServerHost + `"
         - name: COLONIES_SERVER_PORT
-          value: "8080"
+          value: "` + coloniesServerPort + `"
 `
 	return yaml
 }
 
 func (handler K8sHandler) CreateDeployment(yamlFile string) error {
 	deployment := &unstructured.Unstructured{}
+
 	dec := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 	_, _, err := dec.Decode([]byte(yamlFile), nil, deployment)
 	if err != nil {
 		return err
 	}
 
-	deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-	_, err = handler.client.Resource(deploymentRes).Namespace(handler.namespace).Create(context.TODO(), deployment, metav1.CreateOptions{})
+	resource := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	_, err = handler.client.Resource(resource).Namespace(handler.namespace).Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(deploymentRes)
 
 	return nil
 }
 
 func (handler K8sHandler) DeleteDeployment(deploymentName string, force bool) error {
-	deploymentResDep := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-
 	var deleteOptions metav1.DeleteOptions
 	deletePolicy := metav1.DeletePropagationForeground
 	if force {
@@ -134,7 +146,27 @@ func (handler K8sHandler) DeleteDeployment(deploymentName string, force bool) er
 		}
 	}
 
-	err := handler.client.Resource(deploymentResDep).Namespace(handler.namespace).Delete(context.TODO(), "fibonacci-deployment", deleteOptions)
+	resource := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	err := handler.client.Resource(resource).Namespace(handler.namespace).Delete(context.TODO(), deploymentName, deleteOptions)
 
 	return err
+}
+
+func (handler K8sHandler) GetDeployments() ([]string, error) {
+	var names []string
+	listOptions := metav1.ListOptions{}
+
+	resource := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	deployments, err := handler.client.Resource(resource).Namespace(handler.namespace).List(context.TODO(), listOptions)
+	if err != nil {
+		return names, err
+	}
+
+	for _, d := range deployments.Items {
+		metadata := d.Object["metadata"].(map[string]interface{})
+		name := metadata["name"].(string)
+		names = append(names, name)
+	}
+
+	return names, err
 }
