@@ -10,13 +10,15 @@ type KubeColonyRT struct {
 	client       *client.ColoniesClient
 	colonyID     string
 	colonyPrvKey string
+	name         string
 }
 
-func CreateKubeColonyRT(coloniesServerHost string, coloniesServerPort int, colonyID string, colonyPrvKey string) *KubeColonyRT {
+func CreateKubeColonyRT(name, coloniesServerHost string, coloniesServerPort int, colonyID string, colonyPrvKey string) *KubeColonyRT {
 	kubeCRT := &KubeColonyRT{}
 	kubeCRT.client = client.CreateColoniesClient("localhost", 8080, true) // TODO: insecure
 	kubeCRT.colonyID = colonyID
 	kubeCRT.colonyPrvKey = colonyPrvKey
+	kubeCRT.name = name
 
 	return kubeCRT
 }
@@ -40,7 +42,7 @@ func (kubeCRT *KubeColonyRT) registerRuntime() (string, error) {
 	gpu := ""
 	gpus := 0
 
-	runtime := core.CreateRuntime(runtimeID, runtimeType, "test", kubeCRT.colonyID, cpu, cores, mem, gpu, gpus)
+	runtime := core.CreateRuntime(runtimeID, runtimeType, kubeCRT.name, kubeCRT.colonyID, cpu, cores, mem, gpu, gpus)
 
 	_, err = kubeCRT.client.AddRuntime(runtime, kubeCRT.colonyPrvKey)
 	if err != nil {

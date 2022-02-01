@@ -12,7 +12,7 @@ func TestRegisterRuntime(t *testing.T) {
 	client := client.CreateColoniesClient(test.ColoniesServerHost, test.ColoniesServerPort, true)
 	colonyID, colonyPrvKey := test.CreateColony(t, client)
 
-	kubeCRT := CreateKubeColonyRT(test.ColoniesServerHost, test.ColoniesServerPort, colonyID, colonyPrvKey)
+	kubeCRT := CreateKubeColonyRT("test", test.ColoniesServerHost, test.ColoniesServerPort, colonyID, colonyPrvKey)
 	runtimeID, err := kubeCRT.registerRuntime()
 	assert.Nil(t, err)
 
