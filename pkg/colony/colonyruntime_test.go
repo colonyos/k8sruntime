@@ -6,7 +6,7 @@ import (
 
 	"github.com/colonyos/colonies/pkg/client"
 	"github.com/colonyos/colonies/pkg/core"
-	"github.com/colonyos/k8s/pkg/test"
+	"github.com/colonyos/kolony/pkg/test"
 	"github.com/stretchr/testify/assert"
 )
 

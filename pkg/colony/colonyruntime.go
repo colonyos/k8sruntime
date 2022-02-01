@@ -9,7 +9,7 @@ import (
 	"github.com/colonyos/colonies/pkg/client"
 	"github.com/colonyos/colonies/pkg/core"
 	"github.com/colonyos/colonies/pkg/security/crypto"
-	"github.com/colonyos/k8s/pkg/k8s"
+	"github.com/colonyos/kolony/pkg/k8s"
 )
 
 type KubeColonyRT struct {

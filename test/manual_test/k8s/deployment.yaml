@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fibonacci-deployment 
+  labels:
+    app: fibonacci
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fibonacci
+  template:
+    metadata:
+      labels:
+        app: fibonacci
+    spec:
+      containers:
+      - name: fibonacci
+        image: johan/fibonacci 
+        command:
+            - "go"
+            - "run"
+            - "solver.go"
+        env:
+        - name: COLONYID
+          value: "6007729ab9a8985b3a3d2da67f255ba13632c4670fe5c218981d77c55f7b3cab"
+        - name: RUNTIME_PRVKEY
+          value: "2a8647f61c18eb0fe05b33ee1bbe6c7b946bcc763b29f9a3601ea85cb5f7b6eb"
+        - name: COLONIES_SERVER_HOST
+          value: "10.0.0.240"
+        - name: COLONIES_SERVER_PORT
+          value: "8080"
