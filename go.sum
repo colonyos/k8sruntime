@@ -73,6 +73,10 @@ github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnht
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/colonyos/colonies v0.0.0-20220128114001-d6fbcda21042 h1:I7jg2iYYc9L8XB+P3JPp08+q9wzKfkpG6wW4qgWRgy0=
 github.com/colonyos/colonies v0.0.0-20220128114001-d6fbcda21042/go.mod h1:44UUM9wFc9TGEHlwOsSByPITGxS+sSoEDLxa8/x9pQI=
+github.com/colonyos/colonies v0.0.0-20220130133920-08f457701458 h1:r0nIixnXm2mJSKb1DQY5azyZkDDIMox1JHrE4WC4Rv4=
+github.com/colonyos/colonies v0.0.0-20220130133920-08f457701458/go.mod h1:44UUM9wFc9TGEHlwOsSByPITGxS+sSoEDLxa8/x9pQI=
+github.com/colonyos/colonies v0.0.0-20220131121330-4269096ae755 h1:F3+fL/GMHMsZnVjh3O1n8DWoMtPb1iT3JcOOkMVegDg=
+github.com/colonyos/colonies v0.0.0-20220131121330-4269096ae755/go.mod h1:44UUM9wFc9TGEHlwOsSByPITGxS+sSoEDLxa8/x9pQI=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v0.0.0-20171005155431-ecdeabc65495/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

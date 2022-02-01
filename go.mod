@@ -10,7 +10,7 @@ require (
 
 require (
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
-	github.com/colonyos/colonies v0.0.0-20220128114001-d6fbcda21042 // indirect
+	github.com/colonyos/colonies v0.0.0-20220131121330-4269096ae755 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
