@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// NOTE To run this test, you first need to create a colony
+
 func TestParseCmd(t *testing.T) {
 	handler, err := CreateK8sHandler("test")
 	assert.Nil(t, err)
@@ -75,5 +77,8 @@ func TestDeployContainer(t *testing.T) {
 	time.Sleep(5 * time.Second)
 
 	err = handler.DeleteDeployment("fibonacci-deployment", false)
+	assert.Nil(t, err)
+
+	err = client.DeleteRuntime(runtime.ID, colonyPrvKey)
 	assert.Nil(t, err)
 }
