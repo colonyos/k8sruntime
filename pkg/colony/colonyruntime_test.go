@@ -2,8 +2,10 @@ package colony
 
 import (
 	"testing"
+	"time"
 
 	"github.com/colonyos/colonies/pkg/client"
+	"github.com/colonyos/colonies/pkg/core"
 	"github.com/colonyos/k8s/pkg/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -11,21 +13,69 @@ import (
 func TestRegisterRuntime(t *testing.T) {
 	client := client.CreateColoniesClient(test.ColoniesServerHost, test.ColoniesServerPort, true)
 	colonyID, colonyPrvKey := test.CreateColony(t, client)
+	targetColonyID, targetColonyPrvKey := test.CreateColony(t, client)
 
-	kubeCRT := CreateKubeColonyRT("test", test.ColoniesServerHost, test.ColoniesServerPort, colonyID, colonyPrvKey)
-	runtimeID, err := kubeCRT.registerRuntime()
+	kubeCRT, err := CreateKubeColonyRT("test", test.ColoniesServerHost, test.ColoniesServerPort, colonyID, colonyPrvKey, targetColonyID, targetColonyPrvKey, "test")
 	assert.Nil(t, err)
 
-	count, err := kubeCRT.nrOfRuntimes()
+	registered, err := kubeCRT.isRegistered()
 	assert.Nil(t, err)
-	assert.Equal(t, count, 1)
+	assert.True(t, registered)
 
-	err = kubeCRT.unregisterRuntime(runtimeID)
+	err = kubeCRT.Destroy()
 	assert.Nil(t, err)
 
-	count, err = kubeCRT.nrOfRuntimes()
+	registered, err = kubeCRT.isRegistered()
 	assert.Nil(t, err)
-	assert.Equal(t, count, 0)
+	assert.False(t, registered)
 
 	test.DeleteColony(t, client, colonyID)
+	test.DeleteColony(t, client, targetColonyID)
+}
+
+func TestServe(t *testing.T) {
+	client := client.CreateColoniesClient(test.ColoniesServerHost, test.ColoniesServerPort, true)
+	colonyID, colonyPrvKey := test.CreateColony(t, client)
+	targetColonyID, targetColonyPrvKey := test.CreateColony(t, client)
+	_, runtimePrvKey := test.CreateRuntime(t, client, colonyID, colonyPrvKey)
+
+	kubeCRT, err := CreateKubeColonyRT("test", test.ColoniesServerHost, test.ColoniesServerPort, colonyID, colonyPrvKey, targetColonyID, targetColonyPrvKey, "test")
+	assert.Nil(t, err)
+
+	go func() {
+		err := kubeCRT.ServeForEver()
+		assert.Nil(t, err)
+	}()
+
+	json := `
+{
+    "conditions": {
+        "runtimetype": "kube_runtime"
+    },
+    "env": {
+        "name": "fibonacci",
+        "container_image": "johan/fibonacci",
+        "cmd": "go run solver.go"
+    }
+}
+`
+	processSpec, err := core.ConvertJSONToProcessSpec(json)
+	assert.Nil(t, err)
+
+	processSpec.Conditions.ColonyID = colonyID
+
+	_, err = client.SubmitProcessSpec(processSpec, runtimePrvKey)
+	assert.Nil(t, err)
+
+	time.Sleep(2000 * time.Millisecond)
+
+	err = kubeCRT.RemoveAllDeployments()
+	time.Sleep(2000 * time.Millisecond)
+	assert.Nil(t, err)
+
+	err = kubeCRT.Destroy()
+	assert.Nil(t, err)
+
+	test.DeleteColony(t, client, colonyID)
+	test.DeleteColony(t, client, targetColonyID)
 }

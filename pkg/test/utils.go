@@ -10,7 +10,7 @@ import (
 )
 
 const serverPrvKey = "09545df1812e252a2a853cca29d7eace4a3fe2baad334e3b7141a98d43c31e7b"
-const ColoniesServerHost = "localhost"
+const ColoniesServerHost = "10.0.0.240"
 const ColoniesServerPort = 8080
 
 func CreateColony(t *testing.T, client *client.ColoniesClient) (string, string) {
@@ -25,6 +25,32 @@ func CreateColony(t *testing.T, client *client.ColoniesClient) (string, string) 
 	assert.Nil(t, err)
 
 	return colonyID, colonyPrvKey
+}
+
+func CreateRuntime(t *testing.T, client *client.ColoniesClient, colonyID string, colonyPrvKey string) (string, string) {
+	crypto := crypto.CreateCrypto()
+
+	runtimePrvKey, err := crypto.GeneratePrivateKey()
+	assert.Nil(t, err)
+	runtimeID, err := crypto.GenerateID(runtimePrvKey)
+	assert.Nil(t, err)
+
+	runtimeType := "test_runtime_type"
+	name := "test_runtime"
+	cpu := ""
+	cores := 0
+	mem := 0
+	gpu := ""
+	gpus := 0
+
+	runtime := core.CreateRuntime(runtimeID, runtimeType, name, colonyID, cpu, cores, mem, gpu, gpus)
+	addedRuntime, err := client.AddRuntime(runtime, colonyPrvKey)
+	assert.Nil(t, err)
+	assert.True(t, runtime.Equals(addedRuntime))
+	err = client.ApproveRuntime(runtime.ID, colonyPrvKey)
+	assert.Nil(t, err)
+
+	return runtimeID, runtimePrvKey
 }
 
 func DeleteColony(t *testing.T, client *client.ColoniesClient, colonyID string) {
