@@ -33,9 +33,6 @@ var serverStartCmd = &cobra.Command{
 	Short: "Start a Kolony server",
 	Long:  "Start a Kolony server",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(ServerHost)
-		fmt.Println(ServerPort)
-
 		if KubeColonyID == "" {
 			KubeColonyID = os.Getenv("KUBECOLONYID")
 		}
@@ -50,9 +47,6 @@ var serverStartCmd = &cobra.Command{
 			CheckError(errors.New("Unknown Target Colony Id"))
 		}
 
-		fmt.Println(KubeColonyID)
-		fmt.Println(TargetColonyID)
-
 		keychain, err := security.CreateKeychain(KEYCHAIN_PATH)
 		CheckError(err)
 
@@ -66,10 +60,7 @@ var serverStartCmd = &cobra.Command{
 			CheckError(err)
 		}
 
-		fmt.Println(KubeColonyPrvKey)
-		fmt.Println(TargetColonyPrvKey)
-
-		kubeCRT, err := colony.CreateKubeColonyRT("test", ServerHost, ServerPort, KubeColonyID, KubeColonyPrvKey, TargetColonyID, TargetColonyPrvKey, "test")
+		kubeCRT, err := colony.CreateKubeColonyRT("kolony", ServerHost, ServerPort, KubeColonyID, KubeColonyPrvKey, TargetColonyID, TargetColonyPrvKey, "test")
 		CheckError(err)
 
 		err = kubeCRT.ServeForEver()

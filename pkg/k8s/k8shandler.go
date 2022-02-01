@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -78,7 +79,11 @@ func (handler K8sHandler) parseCmd(cmdStr string) string {
 	return cmdArrStr
 }
 
-func (handler K8sHandler) ComposeDeployment(name string, containerImage string, cmdStr string, colonyID string, runtimePrvKey string, coloniesServerHost string, coloniesServerPort string) string {
+func (handler K8sHandler) ComposeDeployment(name string, containerImage string, cmdStr string, colonyID string, cores int, mem int, gpu int, runtimePrvKey string, coloniesServerHost string, coloniesServerPort string) string {
+
+	cpuStr := strconv.Itoa(1000*cores) + "m"
+	memStr := strconv.Itoa(mem) + "Mi"
+
 	yaml := `
 apiVersion: apps/v1
 kind: Deployment
@@ -99,6 +104,13 @@ spec:
       containers:
       - name: ` + name + `
         image: ` + containerImage + `
+        resources:
+          requests:
+            memory: "` + memStr + `"
+            cpu: "` + cpuStr + `"
+          limits:
+            memory: "` + memStr + `" 
+            cpu: "` + cpuStr + `"
         command: ` + handler.parseCmd(cmdStr) + `
         env:
         - name: COLONYID

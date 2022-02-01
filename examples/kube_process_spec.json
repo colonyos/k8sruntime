@@ -1,0 +1,12 @@
+{
+    "conditions": {
+        "runtimetype": "kube_runtime"                                                                                                                 },
+    "env": {
+        "name": "fibonacci",
+        "container_image": "johan/fibonacci",
+        "cmd": "go run solver.go",
+        "cores": "2",
+        "mem": "4000",
+        "gpus": "0"
+    }
+}

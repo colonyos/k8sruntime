@@ -1,0 +1,4 @@
+export COLONYID="3e68a3c116bd2d1cf7cc661aff28c8e9c276f609f1ce384e169ab5280e8d9b60"
+export RUNTIMEID="5a69d7300f08904a84149584ecbec7ba8189fd4578d8c4978ba9be165f745a0d"
+
+colonies process submit --spec fibonacci_process_spec.json

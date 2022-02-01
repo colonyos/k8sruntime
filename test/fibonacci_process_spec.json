@@ -1,8 +1,0 @@
-{
-    "conditions": {
-        "runtimetype": "fibonacci_solver"
-    },
-    "env": {
-        "fibonacciNum": "100"
-    }
-}

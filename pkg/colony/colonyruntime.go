@@ -55,7 +55,7 @@ func CreateKubeColonyRT(name,
 	}
 	kubeCRT.k8sHandler = k8sHandler
 
-	runtimeID, runtimePrvKey, err := kubeCRT.registerRuntime(kubeCRT.name, "kube_runtime", kubeCRT.colonyID, kubeCRT.colonyPrvKey)
+	runtimeID, runtimePrvKey, err := kubeCRT.registerRuntime(kubeCRT.name, "kube_runtime", kubeCRT.colonyID, kubeCRT.colonyPrvKey, 0, 0, 0)
 	if err != nil {
 		return kubeCRT, nil
 	}
@@ -91,6 +91,9 @@ func (kubeCRT *KubeColonyRT) deploy(process *core.Process) error {
 	var constainerImage string
 	var name string
 	var cmd string
+	var coresStr string
+	var memStr string
+	var gpusStr string
 	for _, attribute := range process.Attributes {
 		if attribute.Key == "container_image" {
 			constainerImage = attribute.Value
@@ -101,15 +104,36 @@ func (kubeCRT *KubeColonyRT) deploy(process *core.Process) error {
 		if attribute.Key == "cmd" {
 			cmd = attribute.Value
 		}
-
+		if attribute.Key == "cores" {
+			coresStr = attribute.Value
+		}
+		if attribute.Key == "mem" {
+			memStr = attribute.Value
+		}
+		if attribute.Key == "gpus" {
+			gpusStr = attribute.Value
+		}
 	}
 
-	runtimeID, runtimePrvKey, err := kubeCRT.registerRuntime(name, name, kubeCRT.targetColonyID, kubeCRT.targetColonyPrvKey)
+	cores, err := strconv.Atoi(coresStr)
+	if err != nil {
+		return err
+	}
+	mem, err := strconv.Atoi(memStr)
+	if err != nil {
+		return err
+	}
+	gpus, err := strconv.Atoi(gpusStr)
 	if err != nil {
 		return err
 	}
 
-	yaml := kubeCRT.k8sHandler.ComposeDeployment(runtimeID[0:15]+"-"+name, constainerImage, cmd, kubeCRT.targetColonyID, runtimePrvKey, kubeCRT.coloniesServerHost, strconv.Itoa(kubeCRT.coloniesServerPort))
+	runtimeID, runtimePrvKey, err := kubeCRT.registerRuntime(name, name, kubeCRT.targetColonyID, kubeCRT.targetColonyPrvKey, cores, mem, gpus)
+	if err != nil {
+		return err
+	}
+
+	yaml := kubeCRT.k8sHandler.ComposeDeployment(runtimeID[0:15]+"-"+name, constainerImage, cmd, kubeCRT.targetColonyID, cores, mem, gpus, runtimePrvKey, kubeCRT.coloniesServerHost, strconv.Itoa(kubeCRT.coloniesServerPort))
 
 	err = kubeCRT.k8sHandler.CreateDeployment(yaml)
 	if err != nil {
@@ -120,7 +144,7 @@ func (kubeCRT *KubeColonyRT) deploy(process *core.Process) error {
 	return nil
 }
 
-func (kubeCRT *KubeColonyRT) registerRuntime(name, runtimeType string, colonyID string, colonyPrvKey string) (string, string, error) {
+func (kubeCRT *KubeColonyRT) registerRuntime(name, runtimeType string, colonyID string, colonyPrvKey string, cores int, mem int, gpus int) (string, string, error) {
 	crypto := crypto.CreateCrypto()
 	runtimePrvKey, err := crypto.GeneratePrivateKey()
 	if err != nil {
@@ -133,10 +157,7 @@ func (kubeCRT *KubeColonyRT) registerRuntime(name, runtimeType string, colonyID 
 	}
 
 	cpu := ""
-	cores := 0
-	mem := 0
 	gpu := ""
-	gpus := 0
 
 	runtime := core.CreateRuntime(runtimeID, runtimeType, name, colonyID, cpu, cores, mem, gpu, gpus)
 

@@ -55,7 +55,10 @@ func TestServe(t *testing.T) {
     "env": {
         "name": "fibonacci",
         "container_image": "johan/fibonacci",
-        "cmd": "go run solver.go"
+        "cmd": "go run solver.go",
+		"cores": "2",
+		"mem": "3000",
+		"gpus": "0"
     }
 }
 `

@@ -57,7 +57,7 @@ func TestDeployContainer(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Deploy container to K8s
-	yaml := handler.ComposeDeployment(name, containerImage, cmdStr, colonyID, runtimePrvKey, test.ColoniesServerHost, strconv.Itoa(test.ColoniesServerPort))
+	yaml := handler.ComposeDeployment(name, containerImage, cmdStr, colonyID, cores, mem, gpus, runtimePrvKey, test.ColoniesServerHost, strconv.Itoa(test.ColoniesServerPort))
 	fmt.Println(yaml)
 
 	err = handler.CreateDeployment(yaml)
