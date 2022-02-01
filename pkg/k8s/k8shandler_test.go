@@ -9,10 +9,9 @@ import (
 	"github.com/colonyos/colonies/pkg/client"
 	"github.com/colonyos/colonies/pkg/core"
 	"github.com/colonyos/colonies/pkg/security/crypto"
+	"github.com/colonyos/k8s/pkg/test"
 	"github.com/stretchr/testify/assert"
 )
-
-// NOTE To run this test, you first need to create a colony
 
 func TestParseCmd(t *testing.T) {
 	handler, err := CreateK8sHandler("test")
@@ -26,15 +25,11 @@ func TestParseCmd(t *testing.T) {
 }
 
 func TestDeployContainer(t *testing.T) {
+	client := client.CreateColoniesClient(test.ColoniesServerHost, test.ColoniesServerPort, true)
+	colonyID, colonyPrvKey := test.CreateColony(t, client)
+
 	handler, err := CreateK8sHandler("test")
 	assert.Nil(t, err)
-
-	coloniesServerHost := "10.0.0.240"
-	coloniesServerPort := "8080"
-	port, err := strconv.Atoi(coloniesServerPort)
-	assert.Nil(t, err)
-
-	client := client.CreateColoniesClient(coloniesServerHost, port, true)
 
 	runtimeType := "fibonacci_solver"
 	name := "fibonacci"
@@ -46,8 +41,6 @@ func TestDeployContainer(t *testing.T) {
 
 	containerImage := "johan/fibonacci"
 	cmdStr := "go run solver.go"
-	colonyID := "6007729ab9a8985b3a3d2da67f255ba13632c4670fe5c218981d77c55f7b3cab"
-	colonyPrvKey := "67590823e9a5745ad2aa3acd0038b691bb2e8fa01fb6ad9594020d696e5b9eaf"
 
 	// Register a new runtime
 	crypto := crypto.CreateCrypto()
@@ -64,7 +57,7 @@ func TestDeployContainer(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Deploy container to K8s
-	yaml := handler.ComposeDeployment(name, containerImage, cmdStr, colonyID, runtimePrvKey, coloniesServerHost, coloniesServerPort)
+	yaml := handler.ComposeDeployment(name, containerImage, cmdStr, colonyID, runtimePrvKey, test.ColoniesServerHost, strconv.Itoa(test.ColoniesServerPort))
 	fmt.Println(yaml)
 
 	err = handler.CreateDeployment(yaml)
@@ -81,4 +74,6 @@ func TestDeployContainer(t *testing.T) {
 
 	err = client.DeleteRuntime(runtime.ID, colonyPrvKey)
 	assert.Nil(t, err)
+
+	test.DeleteColony(t, client, colonyID)
 }
