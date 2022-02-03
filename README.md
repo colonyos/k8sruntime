@@ -1,4 +1,4 @@
 # Introduction
-Kolony makes it possible to run Colony processes as Kubernetes pods.
+K3sRuntime makes it possible to run Colony processes as Kubernetes.
 
-![Kolony](docs/images/kolony_arch.png "Kolony")
+![K3sRuntime](docs/images/k3sruntime.png "K3sRuntime")
