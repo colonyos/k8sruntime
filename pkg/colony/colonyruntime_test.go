@@ -1,6 +1,7 @@
 package colony
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -66,7 +67,7 @@ func TestServe(t *testing.T) {
 	assert.Nil(t, err)
 
 	processSpec.Conditions.ColonyID = colonyID
-
+	fmt.Println(processSpec.ToJSON())
 	_, err = client.SubmitProcessSpec(processSpec, runtimePrvKey)
 	assert.Nil(t, err)
 

@@ -11,7 +11,7 @@ import (
 
 const serverPrvKey = "09545df1812e252a2a853cca29d7eace4a3fe2baad334e3b7141a98d43c31e7b"
 const ColoniesServerHost = "10.0.0.240"
-const ColoniesServerPort = 8080
+const ColoniesServerPort = 50080
 
 func CreateColony(t *testing.T, client *client.ColoniesClient) (string, string) {
 	crypto := crypto.CreateCrypto()

@@ -3,6 +3,7 @@ module github.com/colonyos/kolony
 go 1.17
 
 require (
+	github.com/colonyos/colonies v0.0.0-20220131121330-4269096ae755
 	github.com/spf13/cobra v1.3.0
 	github.com/stretchr/testify v1.7.0
 	k8s.io/apimachinery v0.23.3
@@ -11,8 +12,6 @@ require (
 
 require (
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
-	github.com/colonyos/colonies v0.0.0-20220131121330-4269096ae755 // indirect
-	github.com/colonyos/k8s v0.0.0-20220201152116-8561bef13b52 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
