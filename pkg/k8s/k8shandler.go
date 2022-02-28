@@ -79,10 +79,24 @@ func (handler K8sHandler) parseCmd(cmdStr string) string {
 	return cmdArrStr
 }
 
-func (handler K8sHandler) ComposeDeployment(name string, containerImage string, cmdStr string, colonyID string, cores int, mem int, gpu int, runtimePrvKey string, coloniesServerHost string, coloniesServerPort string) string {
+func (handler K8sHandler) arrayToString(array []string) string {
+	str := "["
+	for _, a := range array {
+		str += "\"" + a + "\", "
+	}
+	str = str[:len(str)-2]
+	str += "]"
+	return str
+}
 
+func (handler K8sHandler) ComposeDeployment(name string, containerImage string, cmdStr string, args []string, colonyID string, cores int, mem int, gpu int, runtimePrvKey string, coloniesServerHost string, coloniesServerPort string) string {
 	cpuStr := strconv.Itoa(1000*cores) + "m"
 	memStr := strconv.Itoa(mem) + "Mi"
+
+	var command []string
+	command = append(command, cmdStr)
+	command = append(command, args...)
+	commandStr := handler.arrayToString(command)
 
 	yaml := `
 apiVersion: apps/v1
@@ -111,7 +125,7 @@ spec:
           limits:
             memory: "` + memStr + `" 
             cpu: "` + cpuStr + `"
-        command: ` + handler.parseCmd(cmdStr) + `
+        command: ` + commandStr + `
         env:
         - name: COLONYID
           value: "` + colonyID + `" 

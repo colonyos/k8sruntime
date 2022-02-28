@@ -2,6 +2,7 @@ package test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/colonyos/colonies/pkg/client"
 	"github.com/colonyos/colonies/pkg/core"
@@ -43,7 +44,7 @@ func CreateRuntime(t *testing.T, client *client.ColoniesClient, colonyID string,
 	gpu := ""
 	gpus := 0
 
-	runtime := core.CreateRuntime(runtimeID, runtimeType, name, colonyID, cpu, cores, mem, gpu, gpus)
+	runtime := core.CreateRuntime(runtimeID, runtimeType, name, colonyID, cpu, cores, mem, gpu, gpus, time.Now(), time.Now())
 	addedRuntime, err := client.AddRuntime(runtime, colonyPrvKey)
 	assert.Nil(t, err)
 	assert.True(t, runtime.Equals(addedRuntime))

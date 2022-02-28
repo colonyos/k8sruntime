@@ -88,52 +88,13 @@ func (kubeCRT *KubeColonyRT) ServeForEver() error {
 }
 
 func (kubeCRT *KubeColonyRT) deploy(process *core.Process) error {
-	var constainerImage string
-	var name string
-	var cmd string
-	var coresStr string
-	var memStr string
-	var gpusStr string
-	for _, attribute := range process.Attributes {
-		if attribute.Key == "container_image" {
-			constainerImage = attribute.Value
-		}
-		if attribute.Key == "name" {
-			name = attribute.Value
-		}
-		if attribute.Key == "cmd" {
-			cmd = attribute.Value
-		}
-		if attribute.Key == "cores" {
-			coresStr = attribute.Value
-		}
-		if attribute.Key == "mem" {
-			memStr = attribute.Value
-		}
-		if attribute.Key == "gpus" {
-			gpusStr = attribute.Value
-		}
-	}
-
-	cores, err := strconv.Atoi(coresStr)
-	if err != nil {
-		return err
-	}
-	mem, err := strconv.Atoi(memStr)
-	if err != nil {
-		return err
-	}
-	gpus, err := strconv.Atoi(gpusStr)
+	name := "temp_name" // XXX TODO
+	runtimeID, runtimePrvKey, err := kubeCRT.registerRuntime(name, name, kubeCRT.targetColonyID, kubeCRT.targetColonyPrvKey, process.ProcessSpec.Conditions.Cores, process.ProcessSpec.Conditions.Mem, process.ProcessSpec.Conditions.GPUs)
 	if err != nil {
 		return err
 	}
 
-	runtimeID, runtimePrvKey, err := kubeCRT.registerRuntime(name, name, kubeCRT.targetColonyID, kubeCRT.targetColonyPrvKey, cores, mem, gpus)
-	if err != nil {
-		return err
-	}
-
-	yaml := kubeCRT.k8sHandler.ComposeDeployment(runtimeID[0:15]+"-"+name, constainerImage, cmd, kubeCRT.targetColonyID, cores, mem, gpus, runtimePrvKey, kubeCRT.coloniesServerHost, strconv.Itoa(kubeCRT.coloniesServerPort))
+	yaml := kubeCRT.k8sHandler.ComposeDeployment(runtimeID[0:15]+"-"+name, process.ProcessSpec.Image, process.ProcessSpec.Cmd, process.ProcessSpec.Args, kubeCRT.targetColonyID, process.ProcessSpec.Conditions.Cores, process.ProcessSpec.Conditions.Mem, process.ProcessSpec.Conditions.GPUs, runtimePrvKey, kubeCRT.coloniesServerHost, strconv.Itoa(kubeCRT.coloniesServerPort))
 
 	err = kubeCRT.k8sHandler.CreateDeployment(yaml)
 	if err != nil {
@@ -159,7 +120,7 @@ func (kubeCRT *KubeColonyRT) registerRuntime(name, runtimeType string, colonyID 
 	cpu := ""
 	gpu := ""
 
-	runtime := core.CreateRuntime(runtimeID, runtimeType, name, colonyID, cpu, cores, mem, gpu, gpus)
+	runtime := core.CreateRuntime(runtimeID, runtimeType, name, colonyID, cpu, cores, mem, gpu, gpus, time.Now(), time.Now())
 
 	_, err = kubeCRT.client.AddRuntime(runtime, colonyPrvKey)
 	if err != nil {

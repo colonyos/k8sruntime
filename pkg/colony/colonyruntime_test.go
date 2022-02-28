@@ -51,15 +51,16 @@ func TestServe(t *testing.T) {
 	json := `
 {
     "conditions": {
-        "runtimetype": "kube_runtime"
+        "runtimetype": "kube_runtime",
+		"mem": 1000,
+		"cores": 1,
+		"gpus": 0
     },
+	"image": "colonyos/helloworld",
+	"cmd": "say",
+	"args": ["hello", "world"]
     "env": {
-        "name": "fibonacci",
-        "container_image": "johan/fibonacci",
-        "cmd": "go run solver.go",
-		"cores": "2",
-		"mem": "3000",
-		"gpus": "0"
+        "test_key": "test_value",
     }
 }
 `
